@@ -1,0 +1,16 @@
+{
+  "build": { "dockerfile": "Dockerfile" },
+  "image": "mcr.microsoft.com/devcontainers/typescript-node:0-18",
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "eamodio.gitlens",
+        "hashicorp.terraform",
+        "mhutchie.git-graph"
+      ]
+    }
+  },
+
+  "mounts": ["source=your/aws/path,target=/aws,type=bind,consistency=cached"]
+}
