@@ -1,23 +1,36 @@
 import docker
 
-from devbox.utils import read_json_file
+from devbox.utils import read_json_file, find_devcontainer_config
+
+def find_running_container_by_image(image_name):
+    client = docker.from_env()
+    for container in client.containers.list():
+        try:
+            c_image = container.attrs.get('Config', {}).get('Image', '') or ''
+        except Exception:
+            c_image = ''
+        tags = container.image.tags or []
+        if c_image == image_name or image_name in tags:
+            return container
+    return None
+
+def find_image_from_devcontainer_file():
+    devcjson_file =find_devcontainer_config()
+    if devcjson_file is None:
+        print("devcontainer.json not found.")
+        return None
+    devcjson = read_json_file(devcjson_file)
+    return devcjson.get("image", None)
 
 def start_dev_container():
-    devcjson = read_json_file('./src/testdata/devctest.json')
-    image_name = devcjson.get("image", "mcr.microsoft.com/devcontainers/base:ubuntu")
+    image_name = find_image_from_devcontainer_file()
+    if image_name is None:
+        print("No image specified in devcontainer.json.")
+        return None
     client = docker.from_env()
     try:
         # Look for an existing container that was created from the same image
-        existing = None
-        for c in client.containers.list(all=True):
-            try:
-                c_image = c.attrs.get('Config', {}).get('Image', '') or ''
-            except Exception:
-                c_image = ''
-            tags = c.image.tags or []
-            if c_image == image_name or image_name in tags:
-                existing = c
-                break
+        existing = find_running_container_by_image(image_name)
 
         if existing:
             if existing.status == 'running':
