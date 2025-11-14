@@ -2,25 +2,28 @@ import docker
 
 from devbox.utils import read_json_file, find_devcontainer_config
 
+
 def find_running_container_by_image(image_name):
     client = docker.from_env()
     for container in client.containers.list():
         try:
-            c_image = container.attrs.get('Config', {}).get('Image', '') or ''
+            c_image = container.attrs.get("Config", {}).get("Image", "") or ""
         except Exception:
-            c_image = ''
+            c_image = ""
         tags = container.image.tags or []
         if c_image == image_name or image_name in tags:
             return container
     return None
 
+
 def find_image_from_devcontainer_file():
-    devcjson_file =find_devcontainer_config()
+    devcjson_file = find_devcontainer_config()
     if devcjson_file is None:
         print("devcontainer.json not found.")
         return None
     devcjson = read_json_file(devcjson_file)
     return devcjson.get("image", None)
+
 
 def start_dev_container():
     image_name = find_image_from_devcontainer_file()
@@ -33,7 +36,7 @@ def start_dev_container():
         existing = find_running_container_by_image(image_name)
 
         if existing:
-            if existing.status == 'running':
+            if existing.status == "running":
                 print(f"Found running container with same image: {existing.id}")
                 return existing
             else:
@@ -67,8 +70,8 @@ def stop_dev_container(container_id):
 
 def container_cli(container_id):
     import subprocess
+
     try:
-        subprocess.run(['docker', 'exec', '-it', container_id, '/bin/bash'])
+        subprocess.run(["docker", "exec", "-it", container_id, "/bin/bash"])
     except Exception as e:
         print(f"An error occurred while accessing the container CLI: {e}")
-

@@ -1,0 +1,13 @@
+{
+    "build": { "dockerfile": "Dockerfile" },
+
+    "customizations": {
+        "vscode": {
+        "extensions": ["eamodio.gitlens",
+		"hashicorp.terraform",
+		"mhutchie.git-graph"]
+        }
+    },
+
+    "mounts": [ "source=/Users/claudiomasolo/.aws,target=/aws,type=bind,consistency=cached" ]
+}
