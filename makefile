@@ -16,7 +16,7 @@ format:
 	uv run ruff format .
 
 run:
-	uv run python main.py
+	uv run main.py
 
 help:
 	@echo "Available commands:"
