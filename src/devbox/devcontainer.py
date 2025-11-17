@@ -296,11 +296,34 @@ def stop_dev_container(container_id: str) -> None:
 def container_cli(container_id: str) -> None:
     """
     Launch interactive shell in container.
+    Tries common shells in order: /bin/bash, /bin/sh, /bin/zsh
     """
     import subprocess
 
+    shells = ["/bin/bash", "/bin/sh", "/bin/zsh"]
+    
+    if docker is None:
+        print("docker SDK not available; cannot inspect container.")
+        return
+    
     try:
-        subprocess.run(["docker", "exec", "-it", container_id, "/bin/bash"])
+        client = docker.from_env()
+        container = client.containers.get(container_id)
+        
+        # Try each shell in order
+        for shell in shells:
+            try:
+                # Use docker exec to check if shell exists
+                result = container.exec_run(f"test -x {shell}", privileged=False)
+                if result.exit_code == 0:
+                    print(f"Using shell: {shell}")
+                    subprocess.run(["docker", "exec", "-it", container_id, shell])
+                    return
+            except Exception:
+                continue
+        
+        # No shell found
+        print(f"No suitable shell found in container. Tried: {', '.join(shells)}")
     except Exception as e:
         print(f"An error occurred while accessing the container CLI: {e}")
 
