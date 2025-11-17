@@ -317,6 +317,19 @@ def start() -> None:
     print(json.dumps(devcjson, indent=2))
 
     mounts = get_mounts(devcjson)
+    
+    # Add current directory mount to workspace
+    cwd = os.getcwd()
+    workspace_target = devcjson.get("workspaceFolder", "/workspace")
+    if docker is not None and Mount is not object:
+        cwd_mount = Mount(
+            source=cwd,
+            target=workspace_target,
+            type="bind",
+            read_only=False
+        )
+        mounts.append(cwd_mount)
+    
     if mounts:
         print(f"Configured {len(mounts)} mount(s):")
         for m in mounts:
